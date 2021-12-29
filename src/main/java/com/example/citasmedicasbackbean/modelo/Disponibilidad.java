@@ -15,7 +15,7 @@ public class Disponibilidad implements Serializable {
 
     @ManyToOne
     @JoinColumn(name = "id_doctor", referencedColumnName = "id_usuario")
-    private Usuario usuario;
+    private Usuario usuarioDoctor;
 
     @Column(name = "dia")
     private String dia;
@@ -29,8 +29,8 @@ public class Disponibilidad implements Serializable {
     public Disponibilidad() {
     }
 
-    public Disponibilidad(Usuario usuario, String dia, String horaInicio, String horaFin) {
-        this.usuario = usuario;
+    public Disponibilidad(Usuario usuarioDoctor, String dia, String horaInicio, String horaFin) {
+        this.usuarioDoctor = usuarioDoctor;
         this.dia = dia;
         this.horaInicio = horaInicio;
         this.horaFin = horaFin;
@@ -44,12 +44,12 @@ public class Disponibilidad implements Serializable {
         this.idDisponibilidad = idDisponibilidad;
     }
 
-    public Usuario getUsuario() {
-        return usuario;
+    public Usuario getUsuarioDoctor() {
+        return usuarioDoctor;
     }
 
-    public void setUsuario(Usuario usuario) {
-        this.usuario = usuario;
+    public void setUsuarioDoctor(Usuario usuarioDoctor) {
+        this.usuarioDoctor = usuarioDoctor;
     }
 
     public String getDia() {

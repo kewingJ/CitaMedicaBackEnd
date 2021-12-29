@@ -41,7 +41,19 @@ public class ServicioPaciente {
 
     /**
      * URL: http://localhost:8080/appointment Parameters in
-     * Postman: {"usuarioPaciente":"12","usuarioDoctor":"1","fechaCita":"2021-12-24 06:00:00"}
+     * Postman: {"usuarioPaciente":{
+     *     "idUsuario": 12,
+     *     "nombre": "Henry Hurtado",
+     *     "password": "$2a$10$07CEBSTceqwklAFHVevhS.yvTQLynx.wRuRDqZ2mObQ/rmJua5tkO",
+     *     "rol": "Paciente",
+     *     "username": "hhurtado"
+     * },"usuarioDoctor":{
+     *     "idUsuario": 1,
+     *     "nombre": "uno",
+     *     "password": "$2a$10$07CEBSTceqwklAFHVevhS.yvTQLynx.wRuRDqZ2mObQ/rmJua5tkO",
+     *     "rol": "Paciente",
+     *     "username": "hhurtado"
+     * },"fechaCita":"2021-12-24 06:00:00"}
      *
      * @param citaRequest
      * @return Response list NOTA: retorna el valor de "bien" cuando se agrega una nueva cita
@@ -76,8 +88,7 @@ public class ServicioPaciente {
     @DELETE
     @Path("{citaId}")
     @Produces(MediaType.APPLICATION_JSON)
-    public int deleteCitaPaciente(@PathParam("citaId") long citaId) {
-        int deletedCount = 0;
+    public Response deleteCitaPaciente(@PathParam("citaId") long citaId) {
         try {
             //obtener los datos de la cita a borrar
             String jpql = "SELECT c FROM Cita c where c.idCita = :citaId";
@@ -92,8 +103,8 @@ public class ServicioPaciente {
             emf.close();
             em.close();
         } catch (NoResultException ex) {
-            //ex.printStackTrace();
+            ex.printStackTrace();
         }
-        return deletedCount;
+        return Response.ok("bien").build();
     }
 }
