@@ -6,7 +6,9 @@ import org.mindrot.jbcrypt.BCrypt;
 import javax.persistence.*;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @Path("/auth")
 public class ServicioAuth {
@@ -25,9 +27,10 @@ public class ServicioAuth {
     @Path("/signup")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response signup(Usuario usuarioRequest) {
+    public Map<String, String> signup(Usuario usuarioRequest) {
         String nombre = usuarioRequest.getNombre();
         String username = usuarioRequest.getUsername();
+        HashMap<String, String> map = new HashMap<>();
         //encriptar con jbcrypt
         String password = BCrypt.hashpw(usuarioRequest.getPassword(), BCrypt.gensalt(10));
         String rol = usuarioRequest.getRol();
@@ -41,7 +44,8 @@ public class ServicioAuth {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return Response.ok("bien").build();
+        map.put("mensaje", "Bien");
+        return map;
     }
 
     /**

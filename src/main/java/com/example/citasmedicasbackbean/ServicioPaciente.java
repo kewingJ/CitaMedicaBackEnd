@@ -6,8 +6,12 @@ import javax.persistence.*;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.ArrayList;
-import java.util.List;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 
 @Path("/appointment")
 public class ServicioPaciente {
@@ -37,6 +41,27 @@ public class ServicioPaciente {
             //ex.printStackTrace();
         }
         return listaCitas;
+    }
+
+    /**
+     * URL: http://localhost:8080/appointment/doctores
+     *
+     */
+    @GET
+    @Path("/doctores")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<Usuario> getListaDoctores() {
+        List<Usuario> listaDoctores = new ArrayList<>();
+        try {
+            String jpql = "SELECT u FROM Usuario u where u.rol = :rol";
+            TypedQuery<Usuario> query = em.createQuery(jpql, Usuario.class);
+            query.setParameter("rol", "doctor");
+            listaDoctores = query.getResultList();
+        } catch (NoResultException ex) {
+            //ex.printStackTrace();
+        }
+        return listaDoctores;
     }
 
     /**
@@ -88,7 +113,9 @@ public class ServicioPaciente {
     @DELETE
     @Path("{citaId}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response deleteCitaPaciente(@PathParam("citaId") long citaId) {
+    public Map<String, String> deleteCitaPaciente(@PathParam("citaId") long citaId) throws ParseException {
+        HashMap<String, String> map = new HashMap<>();
+        String mensaje = "";
         try {
             //obtener los datos de la cita a borrar
             String jpql = "SELECT c FROM Cita c where c.idCita = :citaId";
@@ -96,15 +123,33 @@ public class ServicioPaciente {
             query.setParameter("citaId", citaId);
             Cita cita = query.getSingleResult();
 
-            //proceder a borrar cita
-            em.getTransaction().begin();
-            em.remove(cita);
-            em.getTransaction().commit();
-            emf.close();
-            em.close();
+            //verificar si la cancelacion no es media hora antes de la cita
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            String fecha1 = cita.getFechaCita();
+            String fecha2 = LocalDateTime.now().format(formatter);
+            //
+            SimpleDateFormat formato = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            Date fechaA = formato.parse(fecha1);
+            Date fechaB = formato.parse(fecha2);
+            long diff = fechaA.getTime() - fechaB.getTime();
+            long day = diff/(24*60*60*1000);
+            long hour = (diff/(60*60*1000)-day*24);
+            long min = ((diff/(60*1000))-day*24*60-hour*60);
+            if(day > 0 || hour > 0 || min > 30) {
+                //proceder a borrar cita
+                em.getTransaction().begin();
+                em.remove(cita);
+                em.getTransaction().commit();
+                emf.close();
+                em.close();
+                mensaje = "bien";
+            } else {
+                mensaje = "No puede cancelar la cita media hora antes";
+            }
         } catch (NoResultException ex) {
             ex.printStackTrace();
         }
-        return Response.ok("bien").build();
+        map.put("mensaje", mensaje);
+        return map;
     }
 }
