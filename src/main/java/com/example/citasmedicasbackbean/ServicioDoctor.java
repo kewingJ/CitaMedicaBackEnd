@@ -7,13 +7,10 @@ import com.example.citasmedicasbackbean.modelo.Usuario;
 import javax.persistence.*;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Path("/schedule")
 public class ServicioDoctor {
@@ -87,11 +84,13 @@ public class ServicioDoctor {
     @Path("new-day")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response saveDisponibilidad(Disponibilidad disponibilidadRequest) {
+    public Map<String, String> saveDisponibilidad(Disponibilidad disponibilidadRequest) {
         Usuario usuarioDoctor = disponibilidadRequest.getUsuarioDoctor();
         String dia = disponibilidadRequest.getDia();
         String horaInicio = disponibilidadRequest.getHoraInicio();
         String horaFin = disponibilidadRequest.getHoraFin();
+        HashMap<String, String> map = new HashMap<>();
+        String mensaje = "";
 
         //pasar datos al modelo
         Disponibilidad disponibilidad = new Disponibilidad(usuarioDoctor, dia, horaInicio, horaFin);
@@ -99,10 +98,12 @@ public class ServicioDoctor {
             em.getTransaction().begin();
             em.persist(disponibilidad);
             em.getTransaction().commit();
+            mensaje = "bien";
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return Response.ok("bien").build();
+        map.put("mensaje", mensaje);
+        return map;
     }
 
     public static String upperCaseFirst(String val) {

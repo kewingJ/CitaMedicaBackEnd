@@ -5,10 +5,8 @@ import com.example.citasmedicasbackbean.modelo.Cita;
 import javax.persistence.*;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -87,21 +85,67 @@ public class ServicioPaciente {
     @Path("")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response saveCitaPaciente(Cita citaRequest) {
+    public Map<String, String> saveCitaPaciente(Cita citaRequest) throws ParseException {
         Usuario usuarioPaciente = citaRequest.getUsuarioPaciente();
         Usuario usuarioDoctor = citaRequest.getUsuarioDoctor();
         String fechaCita = citaRequest.getFechaCita();
+        //formato de fecha
+        Date fechaCitaQuery = new SimpleDateFormat("yyyy-MM-dd").parse(fechaCita);
+        HashMap<String, String> map = new HashMap<>();
+        String mensaje = "";
+        boolean saveCita = true;
+        List listaResultado = new ArrayList<>();
+
+        //primera validacion
+        //Un paciente solo puede reservar una hora al día con un médico.
+        String jpql1 = "SELECT c FROM Cita c where c.usuarioPaciente.idUsuario = :idPaciente AND DATE(c.fechaCita) = :fechaCita";
+        TypedQuery<Cita> query1 = em.createQuery(jpql1, Cita.class);
+        query1.setParameter("idPaciente", usuarioPaciente.getIdUsuario());
+        query1.setParameter("fechaCita", fechaCitaQuery);
+        listaResultado = query1.getResultList();
+        if (listaResultado.size() > 0){
+            mensaje = "Usted ya tiene una cita agendada para esa fecha";
+            saveCita = false;
+        }
+
+        //segunda validacion
+        //Una cita no se puede superponer.
+        String jpql2 = "SELECT c FROM Cita c where c.usuarioDoctor.idUsuario = :idDoctor AND c.fechaCita = :fechaCita";
+        TypedQuery<Cita> query2 = em.createQuery(jpql2, Cita.class);
+        query2.setParameter("idDoctor", usuarioDoctor.getIdUsuario());
+        query2.setParameter("fechaCita", fechaCita);
+        listaResultado = query2.getResultList();
+        if (listaResultado.size() > 0){
+            mensaje = "El doctor tiene una cita a esa hora, por favor seleccione otra hora";
+            saveCita = false;
+        }
+
+        //tercera validacion
+        //Un médico puede ser agendado hasta 6 veces en un día.
+        String jpql3 = "SELECT c FROM Cita c where c.usuarioDoctor.idUsuario = :idDoctor AND DATE(c.fechaCita) = :fechaCita";
+        TypedQuery<Cita> query3 = em.createQuery(jpql3, Cita.class);
+        query3.setParameter("idDoctor", usuarioDoctor.getIdUsuario());
+        query3.setParameter("fechaCita", fechaCitaQuery);
+        listaResultado = query3.getResultList();
+        if (listaResultado.size() == 6){
+            mensaje = "El doctor ya tiene agendado esa fecha, por favor seleccione otra fecha";
+            saveCita = false;
+        }
 
         //pasar datos al modelo
         Cita cita = new Cita(usuarioPaciente, usuarioDoctor, fechaCita);
         try {
-            em.getTransaction().begin();
-            em.persist(cita);
-            em.getTransaction().commit();
+            if (saveCita){
+                em.getTransaction().begin();
+                em.persist(cita);
+                em.getTransaction().commit();
+                mensaje = "bien";
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return Response.ok("bien").build();
+        map.put("mensaje", mensaje);
+        return map;
     }
 
     /**
