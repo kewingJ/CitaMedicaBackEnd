@@ -14,9 +14,9 @@ para este paso antes de iniciar el proyecto se tiene que consultar el endpoint
 
 # DEMO
 https://developersgeeks.com/Nica-source/agenda
-Usuario paciente: registrarse
-Usuario Doctor : cschumm
-Password de los doctores : holamundo
+ Usuario paciente: registrarse
+ Usuario Doctor : cschumm
+ Password de los doctores : holamundo
 
 # Vista Login
 ![Captura de Pantalla 2021-12-30 a la(s) 10 10 30](https://user-images.githubusercontent.com/46539023/147841378-2d70c96f-8e3a-4aed-babb-151446c0de6f.png)
