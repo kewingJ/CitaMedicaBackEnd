@@ -12,7 +12,8 @@ Pasos a seguir para desplegar el sistema (Back End)
 para este paso antes de iniciar el proyecto se tiene que consultar el endpoint
 [GET] /init
 
-# DEMO
+# DEMO 
+(Actualmemte no funcional el backend online por problemas monetarios, pero se pude desplegar desde local el backend y el frontend)
 https://developersgeeks.com/Nica-source/agenda
  Usuario paciente: registrarse
  Usuario Doctor : cschumm
